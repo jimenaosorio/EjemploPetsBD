@@ -5,6 +5,7 @@
 <%@page import="com.beans.ServicioLocal"%>
 <%@page import="javax.naming.InitialContext"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="xx" uri="/WEB-INF/tlds/tagimg.tld"%>
 
 <%! private ServicioLocal servicio; %>
         <%
