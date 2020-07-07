@@ -7,6 +7,56 @@
 <div class="row">
     <div class="col s6 offset-s3">
         <div class="card-panel">
+            <h4>Agregar Producto</h4>
+            <form action="control.do" method="post" enctype="multipart/form-data">
+                <div class="input-field col s12">
+                    <input name="nombre" id="nombre" type="text" class="validate">
+                    <label for="nombre">Nombre</label>
+                </div>
+                <div class="input-field col s12">
+                    <input name="precio" id="precio" type="text" class="validate">
+                    <label for="precio">Precio</label>
+                </div>
+                <div class="input-field col s12">
+                    <input name="unidad" id="unidad" type="text" class="validate">
+                    <label for="unidad">Unidades</label>
+                </div>
+                <div class="input-field col s12">
+                    <textarea name="descripcion" class="materialize-textarea col s12"></textarea>
+                    <label for="descripcion">Descripcion</label>
+                </div>
+                <label for="categoria">Categoria</label>
+                <select name="idcategoria" class="col s12" id="categoria">
+                    <c:forEach items="${pageScope.categorias}" var="c">
+                        <option value="${c.idCategoria}">${c.nombreCategoria}</option>
+                    </c:forEach>
+                </select>
+                
+                <br/><br/><br/>
+                <div class="file-field input-field col s12">
+                    <div class="btn">
+                        <span>Foto</span>
+                        <input type="file" name="foto"/>
+                    </div>
+                    <div class="file-path-wrapper">
+                        <input class="file-path validate col s6" type="text"/>
+                    </div>
+                </div>
+                <br/><br/><br/>
+                <div class="col s12">
+                    <button name="boton" value="nuevoproducto" class="btn right">Ingresar</button>
+                    <br/><br/><br/>
+                </div>
+                
+            </form>
+            <div class="col s12">
+                ${requestScope.msg}
+            </div>
+            <br/><br/><br/>
+        </div>
+    </div>
+    <div class="col s6 offset-s3">
+        <div class="card-panel">
             <h4>Productos</h4>
             
             <table class="bordered">

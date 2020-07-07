@@ -8,23 +8,30 @@ package com.controller;
 import com.beans.ServicioLocal;
 import com.entities.Categoria;
 import com.entities.Perfil;
+import com.entities.Producto;
 import com.entities.Usuario;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import util.Hash;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
  * @author jimenaosorio
  */
 @WebServlet(name = "ControlServlet", urlPatterns = {"/control.do"})
+@MultipartConfig(location="/tmp", fileSizeThreshold = 1024*1024, maxFileSize=1024*1024*5, maxRequestSize=1024*1024*5*5)
+
 public class ControlServlet extends HttpServlet {
 
     @EJB
@@ -56,8 +63,72 @@ public class ControlServlet extends HttpServlet {
                             break;
             case "editardatos2": modificarUsuario(request,response,2);
                             break;
+            case "nuevoproducto": nuevoProducto(request,response);
+                            break;
+            
         }
         
+    }
+    
+    protected void nuevoProducto(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String nombre=request.getParameter("nombre");
+        String precioStr=request.getParameter("precio");
+        String unidadStr=request.getParameter("unidad");
+        String descripcion=request.getParameter("descripcion");
+        String categoriaStr=request.getParameter("idcategoria");
+        String errores="";
+        int precio=0, unidad=0, idCategoria=0;
+        InputStream stream=null;
+        Part foto=request.getPart("foto");
+        if(foto!=null){
+            stream=foto.getInputStream();
+        }
+        
+        if(nombre.isEmpty()) errores+="Debe ingresar el nombre.<br/>";
+        if(descripcion.isEmpty()) errores+="Debe ingresar la descripcion.<br/>";
+        if(precioStr.isEmpty()) errores+="Debe ingresar el precio.<br/>";
+        try{
+            precio=Integer.parseInt(precioStr);
+        }catch(Exception ex){
+            errores+="El precio debe ser un numero.<br/>";
+        }
+        if(unidadStr.isEmpty()) errores+="Debe ingresar las unidades.<br/>";
+        try{
+            unidad=Integer.parseInt(unidadStr);
+        }catch(Exception ex)
+        {
+            errores+="Las unidades deben ser un numero.<br/>";
+        }
+        if(errores.isEmpty())
+        {
+            //Buscar la categoria
+            idCategoria=Integer.parseInt(categoriaStr);
+            Categoria categoria=servicio.buscarCategoria(idCategoria);
+            //Crear el producto
+            Producto nuevo=new Producto();
+            //Agregamos los atributos
+            nuevo.setNombreProducto(nombre);
+            nuevo.setPrecioProducto(precio);
+            nuevo.setUnidadesProducto(unidad);
+            nuevo.setDescripcionProducto(descripcion);
+            nuevo.setCategoria(categoria);
+            if(stream!=null){
+                nuevo.setFotoProducto(IOUtils.toByteArray(stream));
+            }
+            //Guardar el producto en la base de datos
+            servicio.guardar(nuevo);
+            //Guardar el producto en la lista de su categoria
+            categoria.getProductoList().add(nuevo);
+            servicio.sincronizar(categoria);
+            
+            //Mensaje
+            request.setAttribute("msg", "Producto creado");
+        }
+        else{
+            request.setAttribute("msg",errores);
+        }
+        request.getRequestDispatcher("admin_producto.jsp").forward(request, response);
     }
     
     protected void modificarUsuario(HttpServletRequest request, HttpServletResponse response, int clave)
